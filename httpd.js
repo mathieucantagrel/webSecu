@@ -3,57 +3,65 @@ var fs = require("fs");
 var url = require("url");
 var path = require("path");
 
+let configFile = require("./config.json");
+
 var server = http.createServer((req, res) => {
   let parsedUrl = url.parse(req.url, true);
-
   let requestedPath = parsedUrl.path.replace(/^\/+|\/+$/g, "");
 
   if (requestedPath === "") {
-    fs.readdirSync("./public/").forEach((file) => {
-      if (file === "index.html") {
-        requestedPath = "index.html";
+    fs.readdirSync(configFile.defaultDirectory).forEach((file) => {
+      if (file === configFile.defaultFile) {
+        requestedPath = configFile.defaultFile;
       }
     });
   }
   console.log("requested path: " + requestedPath);
 
   if (requestedPath === "") {
-    res.writeHead(200, { "Content-type": "text/html" });
-    res.write("<ul>");
-    fs.readdirSync("./public/").forEach((file) => {
-      res.write("<li>" + file + "</li>");
-    });
-    res.write("</ul>");
-    res.end();
+    noDefaultFile(res);
   }
 
-  let file = __dirname + "/public/" + requestedPath;
+  let file = configFile.defaultDirectory + requestedPath;
   fs.readFile(file, function (err, content) {
-    if (err) {
-      res.writeHead(404);
-      res.end();
-    }
-
-    let mimeType;
-    switch (path.extname(requestedPath)) {
-      case ".css":
-        mimeType = "text/css";
-        break;
-      case ".js":
-        mimeType = "text/javascript";
-        break;
-
-      default:
-        mimeType = "text/html";
-        break;
-    }
-
-    console.log("mime-type: ", mimeType);
-
-    res.writeHead(200, { "Content-type": mimeType });
-    res.write(content);
-    res.end();
+    sendContent(res, err, content, requestedPath);
   });
 });
 
-server.listen(8000);
+server.listen(configFile.port);
+
+function noDefaultFile(res) {
+  res.writeHead(200, { "Content-type": "text/html" });
+  res.write("<ul>");
+  fs.readdirSync(configFile.defaultDirectory).forEach((file) => {
+    res.write("<li>" + file + "</li>");
+  });
+  res.write("</ul>");
+  res.end();
+}
+
+function sendContent(res, err, content, requestedPath) {
+  if (err) {
+    res.writeHead(404);
+    res.end();
+  }
+
+  let mimeType = getMimeType(requestedPath);
+
+  console.log("mime-type: ", mimeType);
+
+  res.writeHead(200, { "Content-type": mimeType });
+  res.write(content);
+  res.end();
+}
+
+function getMimeType(requestedPath) {
+  switch (path.extname(requestedPath)) {
+    case ".css":
+      return "text/css";
+    case ".js":
+      return "text/javascript";
+    default:
+      return "text/html";
+  }
+}
