@@ -4,8 +4,11 @@ var url = require("url");
 var path = require("path");
 
 let configFile = require("./config.json");
+const { parse } = require("querystring");
 
 var server = http.createServer((req, res) => {
+  getRequestInformations(req);
+
   let parsedUrl = url.parse(req.url, true);
   let requestedPath = parsedUrl.path.replace(/^\/+|\/+$/g, "");
 
@@ -63,5 +66,22 @@ function getMimeType(requestedPath) {
       return "text/javascript";
     default:
       return "text/html";
+  }
+}
+
+function getRequestInformations(req) {
+  console.log(req.method);
+  console.log(req.url);
+
+  if (req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      let bodyParsed = parse(body);
+      console.log("email: ", bodyParsed.email);
+      console.log("password: ", bodyParsed.password);
+    });
   }
 }
