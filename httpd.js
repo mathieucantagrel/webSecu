@@ -8,10 +8,24 @@ var server = http.createServer((req, res) => {
 
   let requestedPath = parsedUrl.path.replace(/^\/+|\/+$/g, "");
 
-  if (requestedPath == "") {
-    requestedPath = "index.html";
+  if (requestedPath === "") {
+    fs.readdirSync("./public/").forEach((file) => {
+      if (file === "index.html") {
+        requestedPath = "index.html";
+      }
+    });
   }
   console.log("requested path: " + requestedPath);
+
+  if (requestedPath === "") {
+    res.writeHead(200, { "Content-type": "text/html" });
+    res.write("<ul>");
+    fs.readdirSync("./public/").forEach((file) => {
+      res.write("<li>" + file + "</li>");
+    });
+    res.write("</ul>");
+    res.end();
+  }
 
   let file = __dirname + "/public/" + requestedPath;
   fs.readFile(file, function (err, content) {
