@@ -10,7 +10,8 @@ var server = http.createServer((req, res) => {
   getRequestInformations(req);
 
   let parsedUrl = url.parse(req.url, true);
-  let requestedPath = parsedUrl.path.replace(/^\/+|\/+$/g, "");
+  let requestedPath = parsedUrl.pathname.replace(/^\/+|\/+$/g, "");
+  console.log(requestedPath);
 
   switch (requestedPath) {
     case "information":
@@ -49,9 +50,36 @@ function infoRoute(req, res) {
   let file = "./templates/information.template";
   fs.readFile(file, function (err, content) {
     res.writeHead(200, { "Content-type": "text/html" });
-    res.write(content);
+    let method = req.method;
+    let parsedUrl = url.parse(req.url, true);
+    res.write(
+      populateContentInfo(
+        content.toString(),
+        parsedUrl.pathname,
+        method,
+        parsedUrl.search,
+        new url.URLSearchParams(parsedUrl.search)
+      )
+    );
     res.end();
   });
+}
+
+function populateContentInfo(content, pathname, method, args, queries) {
+  let contentToSend = content;
+
+  contentToSend = contentToSend.replace("{{method}}", method);
+  contentToSend = contentToSend.replace("{{path}}", pathname);
+  contentToSend = contentToSend.replace("{{query}}", args);
+
+  let queriesToPrint = "";
+  for (entry of queries.entries()) {
+    queriesToPrint += "<li>" + entry[0] + ":" + entry[1] + "</li>";
+  }
+
+  contentToSend = contentToSend.replace("{{queries}}", queriesToPrint);
+
+  return contentToSend;
 }
 
 function noDefaultFile(res) {
