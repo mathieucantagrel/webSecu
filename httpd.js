@@ -12,23 +12,32 @@ var server = http.createServer((req, res) => {
   let parsedUrl = url.parse(req.url, true);
   let requestedPath = parsedUrl.path.replace(/^\/+|\/+$/g, "");
 
-  if (requestedPath === "") {
-    fs.readdirSync(configFile.defaultDirectory).forEach((file) => {
-      if (file === configFile.defaultFile) {
-        requestedPath = configFile.defaultFile;
-      }
+  if (requestedPath === "information") {
+    let file = "./templates/information.template";
+    fs.readFile(file, function (err, content) {
+      res.writeHead(200, { "Content-type": "text/html" });
+      res.write(content);
+      res.end();
+    });
+  } else {
+    if (requestedPath === "") {
+      fs.readdirSync(configFile.defaultDirectory).forEach((file) => {
+        if (file === configFile.defaultFile) {
+          requestedPath = configFile.defaultFile;
+        }
+      });
+    }
+    console.log("requested path: " + requestedPath);
+
+    if (requestedPath === "") {
+      noDefaultFile(res);
+    }
+
+    let file = configFile.defaultDirectory + requestedPath;
+    fs.readFile(file, function (err, content) {
+      sendContent(res, err, content, requestedPath);
     });
   }
-  console.log("requested path: " + requestedPath);
-
-  if (requestedPath === "") {
-    noDefaultFile(res);
-  }
-
-  let file = configFile.defaultDirectory + requestedPath;
-  fs.readFile(file, function (err, content) {
-    sendContent(res, err, content, requestedPath);
-  });
 });
 
 server.listen(configFile.port);
