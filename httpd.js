@@ -12,35 +12,47 @@ var server = http.createServer((req, res) => {
   let parsedUrl = url.parse(req.url, true);
   let requestedPath = parsedUrl.path.replace(/^\/+|\/+$/g, "");
 
-  if (requestedPath === "information") {
-    let file = "./templates/information.template";
-    fs.readFile(file, function (err, content) {
-      res.writeHead(200, { "Content-type": "text/html" });
-      res.write(content);
-      res.end();
-    });
-  } else {
-    if (requestedPath === "") {
-      fs.readdirSync(configFile.defaultDirectory).forEach((file) => {
-        if (file === configFile.defaultFile) {
-          requestedPath = configFile.defaultFile;
-        }
-      });
-    }
-    console.log("requested path: " + requestedPath);
+  switch (requestedPath) {
+    case "information":
+      infoRoute(req, res);
+      break;
 
-    if (requestedPath === "") {
-      noDefaultFile(res);
-    }
-
-    let file = configFile.defaultDirectory + requestedPath;
-    fs.readFile(file, function (err, content) {
-      sendContent(res, err, content, requestedPath);
-    });
+    default:
+      defaultRoute(req, res, requestedPath);
+      break;
   }
 });
 
 server.listen(configFile.port);
+
+function defaultRoute(req, res, requestedPath) {
+  if (requestedPath === "") {
+    fs.readdirSync(configFile.defaultDirectory).forEach((file) => {
+      if (file === configFile.defaultFile) {
+        requestedPath = configFile.defaultFile;
+      }
+    });
+  }
+  console.log("requested path: " + requestedPath);
+
+  if (requestedPath === "") {
+    noDefaultFile(res);
+  }
+
+  let file = configFile.defaultDirectory + requestedPath;
+  fs.readFile(file, function (err, content) {
+    sendContent(res, err, content, requestedPath);
+  });
+}
+
+function infoRoute(req, res) {
+  let file = "./templates/information.template";
+  fs.readFile(file, function (err, content) {
+    res.writeHead(200, { "Content-type": "text/html" });
+    res.write(content);
+    res.end();
+  });
+}
 
 function noDefaultFile(res) {
   res.writeHead(200, { "Content-type": "text/html" });
