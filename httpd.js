@@ -18,8 +18,19 @@ var server = http.createServer((req, res) => {
       infoRoute(req, res);
       break;
 
-    default:
+    case "":
       defaultRoute(req, res, requestedPath);
+      break;
+
+    default:
+      let pathExtension = path.extname(requestedPath);
+      if (pathExtension !== "") {
+        defaultRoute(req, res, requestedPath);
+        return;
+      }
+      res.writeHead(404, { "Content-type": "text/html" });
+      res.write("<h1>404 : route not found</h1>");
+      res.end();
       break;
   }
 });
@@ -93,18 +104,19 @@ function noDefaultFile(res) {
 }
 
 function sendContent(res, err, content, requestedPath) {
-  if (err) {
-    res.writeHead(404);
+  try {
+    let mimeType = getMimeType(requestedPath);
+
+    console.log("mime-type: ", mimeType);
+
+    res.writeHead(200, { "Content-type": mimeType });
+    res.write(content);
+    res.end();
+  } catch (error) {
+    res.writeHead(404, { "Content-type": "text/html" });
+    res.write("<h1>404 : file not found</h1>");
     res.end();
   }
-
-  let mimeType = getMimeType(requestedPath);
-
-  console.log("mime-type: ", mimeType);
-
-  res.writeHead(200, { "Content-type": mimeType });
-  res.write(content);
-  res.end();
 }
 
 function getMimeType(requestedPath) {
