@@ -100,6 +100,8 @@ function populateContentInfo(content, pathname, method, args, queries) {
 }
 
 function sanatizeString(str) {
+  if (str === null) return;
+
   return str
     .replace(/&/g, "&amp")
     .replace(/</g, "&lt")
