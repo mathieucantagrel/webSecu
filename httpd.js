@@ -79,18 +79,33 @@ function infoRoute(req, res) {
 function populateContentInfo(content, pathname, method, args, queries) {
   let contentToSend = content;
 
+  pathname = sanatizeString(pathname);
+  method = sanatizeString(method);
+  args = sanatizeString(args);
+
   contentToSend = contentToSend.replace("{{method}}", method);
   contentToSend = contentToSend.replace("{{path}}", pathname);
   contentToSend = contentToSend.replace("{{query}}", args);
 
   let queriesToPrint = "";
   for (entry of queries.entries()) {
+    entry[0] = sanatizeString(entry[0]);
+    entry[1] = sanatizeString(entry[1]);
     queriesToPrint += "<li>" + entry[0] + ":" + entry[1] + "</li>";
   }
 
   contentToSend = contentToSend.replace("{{queries}}", queriesToPrint);
 
   return contentToSend;
+}
+
+function sanatizeString(str) {
+  return str
+    .replace(/&/g, "&amp")
+    .replace(/</g, "&lt")
+    .replace(/\>/g, "&gt")
+    .replace(/\"/g, "&quot")
+    .replace(/\'/g, "&#x27");
 }
 
 function noDefaultFile(res) {
