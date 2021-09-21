@@ -14,11 +14,11 @@ var server = http.createServer((req, res) => {
   console.log(requestedPath);
 
   switch (requestedPath) {
-    case "information":
+    case configFile.route.information.path:
       infoRoute(req, res);
       break;
 
-    case "":
+    case configFile.route.default.path:
       defaultRoute(req, res, requestedPath);
       break;
 
@@ -57,8 +57,8 @@ function defaultRoute(req, res, requestedPath) {
   });
 }
 
-function infoRoute(req, res) {
-  let file = "./templates/information.template";
+function infoRoute(req, res) 
+  let file = configFile.route.information.template;
   fs.readFile(file, function (err, content) {
     res.writeHead(200, { "Content-type": "text/html" });
     let method = req.method;

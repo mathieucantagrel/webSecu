@@ -1,5 +1,14 @@
 {
   "port": 8000,
   "defaultDirectory": "./public/",
-  "defaultFile": "index.html"
+  "defaultFile": "index.html",
+  "route": {
+    "default": {
+      "path": ""
+    },
+    "information": {
+      "path": "",
+      "template": "information.template"
+    }
+  }
 }
