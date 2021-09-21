@@ -7,7 +7,7 @@
       "path": ""
     },
     "information": {
-      "path": "",
+      "path": "information",
       "template": "information.template"
     }
   }

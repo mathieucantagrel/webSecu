@@ -57,8 +57,8 @@ function defaultRoute(req, res, requestedPath) {
   });
 }
 
-function infoRoute(req, res) 
-  let file = configFile.route.information.template;
+function infoRoute(req, res) {
+  let file = "./templates/" + configFile.route.information.template;
   fs.readFile(file, function (err, content) {
     res.writeHead(200, { "Content-type": "text/html" });
     let method = req.method;
